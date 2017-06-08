@@ -11,10 +11,28 @@ Step 1. Add the JitPack repository to your build file,Add it in your root build.
 		}
 	}
   
-Step 2. Add the dependency
+Step 2. Add the dependency,add configuration information
   
 	dependencies {
+	    ...
         compile 'com.github.jackdengchuangliang:baidulocationutils:1.0'
+	}
+	
+    defaultConfig {
+        ...
+        ndk {
+            // 设置支持的SO库架构
+            abiFilters 'armeabi'
+        }
+    }
+    
+	android {
+	    ...
+        sourceSets {
+            main {
+                jniLibs.srcDirs = ['libs']
+            }
+        }
 	}
 	
 Step 3. Instantiate the target object
