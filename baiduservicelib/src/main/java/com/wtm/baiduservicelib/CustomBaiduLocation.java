@@ -1,6 +1,7 @@
 package com.wtm.baiduservicelib;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -91,21 +92,25 @@ public class CustomBaiduLocation implements BDLocationListener {
     public void onReceiveLocation(BDLocation bdLocation) {
         mLocType = bdLocation.getLocType();
         mLatLng = new LatLng(bdLocation.getLatitude(), bdLocation.getLongitude());
-        if(locationListner!=null){
-            locationListner.onLocationReceived(bdLocation);
-        }else{
-            mLocationClient.unRegisterLocationListener(this);
-            mLocationClient.stop();
-        }
-        if (62==mLocType)
-            Toast.makeText(mContext,"定位失败，请检查后重试",Toast.LENGTH_SHORT).show();
-        if (63==mLocType||mLocType==68)
-            Toast.makeText(mContext,"网络链接异常",Toast.LENGTH_SHORT).show();
-        if (162<=mLocType&&mLocType<=700)
-            Toast.makeText(mContext,"定位异常",Toast.LENGTH_SHORT).show();
 
         Log.i("CustomBaiduLocation","locType="+ mLocType);//161成功
         Log.i("CustomBaiduLocation","Latitude="+ bdLocation.getLatitude()+"Longitude="+bdLocation.getLongitude());
+
+        if (locationListner!=null){
+            String errorMsg = "";
+            if (63==mLocType || 68==mLocType || 62==mLocType){
+                errorMsg = "定位失败,网络连接异常";
+                locationListner.onLocationFaile(bdLocation);
+            } else if (162<=mLocType&&mLocType<=700){
+                errorMsg = "定位异常";
+                locationListner.onLocationFaile(bdLocation);
+            }else {
+                locationListner.onLocationSuccess(bdLocation);
+            }
+            if (!TextUtils.isEmpty(errorMsg)){
+                Toast.makeText(mContext,errorMsg,Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     @Override
@@ -120,8 +125,8 @@ public class CustomBaiduLocation implements BDLocationListener {
     private OnLocationReceivedListner locationListner;
 
     public interface OnLocationReceivedListner{
-        void onLocationReceived(BDLocation bdLocation);
+        void onLocationSuccess(BDLocation bdLocation);
+        void onLocationFaile(BDLocation bdLocation);
     }
-
 
 }
