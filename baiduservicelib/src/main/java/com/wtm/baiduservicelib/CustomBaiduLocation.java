@@ -11,6 +11,8 @@ import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.model.LatLng;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Created by jack on 2016/11/23 0023.
  */
@@ -18,7 +20,6 @@ import com.baidu.mapapi.model.LatLng;
 public class CustomBaiduLocation implements BDLocationListener {
 
     private LocationClient mLocationClient = null;
-    private BDLocationListener myListener = this;
     private LatLng mLatLng;
     private int mLocType;
     private String mCoorType;
@@ -28,13 +29,10 @@ public class CustomBaiduLocation implements BDLocationListener {
      * gcj02,bd09,bd09ll
      */
     private static String DEFULT_COORTYPE="bd09ll";
-    private Context mContext;
+    private WeakReference<Context> mContext;
 
     public CustomBaiduLocation(Context context) {
-        mContext =context;
-        mCoorType=DEFULT_COORTYPE;
-        mLocationClient = new LocationClient(context);     //声明LocationClient类
-        initLocation();
+        this(context,DEFULT_COORTYPE);
     }
 
     /**
@@ -42,14 +40,15 @@ public class CustomBaiduLocation implements BDLocationListener {
      * @param context 上下文
      * @param coorType 坐标系类型,可选参数:gcj02,bd09,bd09ll
      */
-    public CustomBaiduLocation(Context context, String coorType) {
+    public CustomBaiduLocation(Context context,String coorType) {
+        mContext = new WeakReference<>(context);
         mCoorType=coorType;
         mLocationClient = new LocationClient(context);     //声明LocationClient类
         initLocation();
     }
 
     public void start(){
-        mLocationClient.registerLocationListener( myListener );    //注册监听函数
+        mLocationClient.registerLocationListener(this);    //注册监听函数
         mLocationClient.start();
     }
 
@@ -58,7 +57,7 @@ public class CustomBaiduLocation implements BDLocationListener {
     }
 
     public void stopLocation(){
-        mLocationClient.unRegisterLocationListener(myListener);
+        mLocationClient.unRegisterLocationListener(this);
         mLocationClient.stop();
     }
 
@@ -107,8 +106,8 @@ public class CustomBaiduLocation implements BDLocationListener {
             }else {
                 locationListner.onLocationSuccess(bdLocation);
             }
-            if (!TextUtils.isEmpty(errorMsg)){
-                Toast.makeText(mContext,errorMsg,Toast.LENGTH_SHORT).show();
+            if (!TextUtils.isEmpty(errorMsg) && (null!=mContext.get())){
+                Toast.makeText(mContext.get(),errorMsg,Toast.LENGTH_SHORT).show();
             }
         }
     }

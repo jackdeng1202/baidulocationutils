@@ -72,5 +72,4 @@ Step 4. Start locating and listening
                 
 Step 4. stop locating and unregister
                
-        mBaiduLocation.stopLocation();//停止定位
         mBaiduLocation.onLocationDestroy();//注销定位信息监听
